@@ -37,6 +37,10 @@ class AddSkills(BaseModel):
 class AddJobs(BaseModel):
     jobs: List[str]
 
+#schema for adding educational qualifications
+class AddEducation(BaseModel):
+    qualifications: List[str]
+
 #schema for returning user profile
 class UserProfile(BaseModel):
     id: int

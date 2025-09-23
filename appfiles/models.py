@@ -13,6 +13,7 @@ class User(Base):
 
     addskill = relationship("Skills", back_populates="skill_author")
     addjob = relationship("Jobs", back_populates="job_author")
+    addedu = relationship("Education", back_populates="education_author")
     addskillreco = relationship("RecommendedSkills", back_populates="skill_recommendation")
     addjobreco = relationship("RecommendedJobs", back_populates="job_recommendation")
 
@@ -33,6 +34,15 @@ class Jobs(Base):
     job = Column(String, primary_key=True)
 
     job_author = relationship("User", back_populates="addjob")
+
+#Education table
+class Education(Base):
+    __tablename__ = "education"
+
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    qualification = Column(String, primary_key=True)
+
+    education_author = relationship("User", back_populates="addjob")
 
 #Skill recommendation table
 class RecommendedSkills(Base):

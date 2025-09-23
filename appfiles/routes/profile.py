@@ -45,6 +45,27 @@ def add_skill(request: schemas.AddJobs,
     db.close()
     return {"user_id": id, "jobs": request.jobs}
 
+#Adding educational qualification to the user profile
+@router.post("/addEducation")
+def add_edu(
+    request: schemas.AddEducation, 
+    db: Session = Depends(database.get_db), 
+    current_user: models.User = Depends(utils.get_current_user
+)):
+    id = current_user.id
+    for i in range(len(request.qualifications)):
+        new_qualification = models.Education(
+            user_id = id,
+            qualification = request.qualifications[i]
+        )
+        '''if new_job == db.query(models.Jobs).filter(models.Jobs.user_id==id and models.Jobs.skill==request.jobs[i]).first():
+            continue'''
+        db.add(new_qualification)
+        db.commit()
+        db.refresh(new_qualification)
+    db.close()
+    return {"user_id": id, "qualifications": request.qualifications}
+
 #Returning user profile
 @router.get("/")
 def get_user_profile(
@@ -55,11 +76,14 @@ def get_user_profile(
     skills = [s[0] for s in skill_list]
     job_list = db.query(models.Jobs).filter(models.Jobs.user_id == current_user.id).with_entities(models.Jobs.job).all()
     jobs = [j[0] for j in job_list]
+    edu_list = db.query(models.Education).filter(models.Education.user_id == current_user.id).with_entities(models.Education.qualification).all()
+    qualifications = [q[0] for q in edu_list]
 
     return {
         "id": current_user.id,
         "name": current_user.name,
         "email": current_user.email,
         "skills": skills,
-        "jobs": jobs
+        "jobs": jobs,
+        "qualifications": qualifications
     }
