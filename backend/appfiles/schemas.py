@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import List
+from typing import List, Optional
 
 #user schema
 class User(BaseModel):
@@ -45,3 +45,28 @@ class UserProfile(BaseModel):
     email: str
     skills: List[str]
     jobs: List[str]
+    
+class EditProfile(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    skills: Optional[List[str]] = None
+    jobs: Optional[List[str]] = None
+
+
+
+################################ Skills route ######################################
+
+class UserDescription(BaseModel):
+    description: str
+
+class SkillList(BaseModel):
+    skills: List[str]
+
+
+################################## Careers route #######################################
+
+class JobRequest(BaseModel):
+    job_role: str
+
+class JobRecommendation(BaseModel):
+    result: str

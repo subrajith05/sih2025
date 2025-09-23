@@ -5,10 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from .. import config
 
-router = APIRouter(
-    tags=["Authentication"],
-    prefix='/auth'
-)
+router = APIRouter(tags=["Authentication"])
 
 get_db = database.get_db
 
@@ -66,17 +63,17 @@ def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(
 def refresh(refresh_token: str, db = Depends(get_db)):
     try:
         payload = jwt.decode(refresh_token, config.REFRESH_SECRET_KEY, algorithms=[config.ALGORITHM])
-        name: str = payload.get("sub")
-        if name is None:
+        email: str = payload.get("sub")
+        if email is None:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
     
-    user = db.query(models.User).filter(models.User.name == name).first()
+    user = db.query(models.User).filter(models.User.email == email).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     
-    new_access_token = utils.create_access_token(data={"sub": user.name})
+    new_access_token = utils.create_access_token(data={"sub": user.email})
     return schemas.Token(
         access_token=new_access_token,
         refresh_token=refresh_token,
