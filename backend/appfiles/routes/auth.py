@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from .. import  models, schemas, database, hashing, utils
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from .. import config
 
 router = APIRouter(
     tags=["Authentication"],
@@ -51,9 +53,32 @@ def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(
     
     #Create JWT token
     access_token = utils.create_access_token(data={"sub": user.email})
+    refresh_token = utils.create_refresh_token(data={"sub": user.email})
 
     return schemas.Token(
         access_token=access_token,
+        refresh_token=refresh_token,
         token_type="bearer"
     )
+
+
+@router.post("/refresh")
+def refresh(refresh_token: str, db = Depends(get_db)):
+    try:
+        payload = jwt.decode(refresh_token, config.REFRESH_SECRET_KEY, algorithms=[config.ALGORITHM])
+        name: str = payload.get("sub")
+        if name is None:
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
     
+    user = db.query(models.User).filter(models.User.name == name).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    
+    new_access_token = utils.create_access_token(data={"sub": user.name})
+    return schemas.Token(
+        access_token=new_access_token,
+        refresh_token=refresh_token,
+        token_type="bearer"
+    )

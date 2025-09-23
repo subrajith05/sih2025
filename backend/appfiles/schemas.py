@@ -23,6 +23,7 @@ class LoginUser(BaseModel):
 #schema for returning token
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
 
 #schema for token request

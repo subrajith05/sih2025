@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated
 
 get_db = database.get_db
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 #Utility to create JWT token
 def create_access_token(data: dict, expires_delta:timedelta = None):
@@ -36,4 +36,11 @@ def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Session 
     if user is None:
         raise credentials_exception
     return user
-    
+
+# utility method to craete a refresh token
+def create_refresh_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(config.REFRESH_TOKEN_EXPIRE_DAYS))
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, config.REFRESH_SECRET_KEY, algorithm=config.ALGORITHM)
+    return encoded_jwt
