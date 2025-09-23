@@ -35,7 +35,7 @@ def create_user(request: schemas.User, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     #Searching for user
-    user = db.query(models.User).filter(models.User.name == request.username).first()
+    user = db.query(models.User).filter(models.User.email == request.username).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -50,7 +50,7 @@ def login(request: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(
         )
     
     #Create JWT token
-    access_token = utils.create_access_token(data={"sub": user.name})
+    access_token = utils.create_access_token(data={"sub": user.email})
 
     return schemas.Token(
         access_token=access_token,

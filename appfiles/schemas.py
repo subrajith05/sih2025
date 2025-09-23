@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from typing import List
 
 #user schema
 class User(BaseModel):
@@ -27,3 +28,19 @@ class Token(BaseModel):
 #schema for token request
 class TokenData(BaseModel):
     email: str | None = None
+
+#schema for adding skills
+class AddSkills(BaseModel):
+    skills: List[str]
+
+#schema for adding jobs
+class AddJobs(BaseModel):
+    jobs: List[str]
+
+#schema for returning user profile
+class UserProfile(BaseModel):
+    id: int
+    name: str
+    email: str
+    skills: List[str]
+    jobs: List[str]
