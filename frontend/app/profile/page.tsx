@@ -11,6 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/components/auth-context"
 import { User, Calendar, Edit3, Save, X, Briefcase, GraduationCap, Heart } from "lucide-react"
+import api from "@/api"
+import { profile } from "console"
 
 const interests = [
   "Frontend Development",
@@ -26,7 +28,7 @@ const interests = [
 ]
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false)
   const [selectedInterests, setSelectedInterests] = useState<string[]>([])
   const [profileData, setProfileData] = useState({
@@ -47,13 +49,39 @@ export default function ProfilePage() {
     setSelectedInterests((prev) => (prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest]))
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Here you would typically save to your backend
+    const { data } = await api.put("http://localhost:8000/user/edit/profile", {
+      "name": profileData.name,
+      "email": profileData.email,
+      // "skills": profileData.currentSkillsText,
+    })
+
+    const mockUser = {
+      "id": 1,
+      "name": profileData.name,
+      "email": profileData.email,
+    }
+
+    localStorage.setItem("user", JSON.stringify(mockUser))
     setIsEditing(false)
   }
 
   const handleCancel = () => {
     // Reset form data
+    setProfileData({
+      name: user?.name || "",
+      email: user?.email || "",
+      phone: "",
+      location: "",
+      bio: "",
+      title: "",
+      company: "",
+      experience: "",
+      education: "",
+      status: "", // new: profile status textbox value
+      currentSkillsText: "", // new: current skills textbox value
+    })
     setIsEditing(false)
   }
 
@@ -269,9 +297,8 @@ export default function ProfilePage() {
                     <Badge
                       key={interest}
                       variant={selectedInterests.includes(interest) ? "default" : "outline"}
-                      className={`cursor-pointer transition-colors ${
-                        isEditing ? "hover:bg-primary hover:text-primary-foreground" : ""
-                      }`}
+                      className={`cursor-pointer transition-colors ${isEditing ? "hover:bg-primary hover:text-primary-foreground" : ""
+                        }`}
                       onClick={() => isEditing && handleInterestToggle(interest)}
                     >
                       {interest}

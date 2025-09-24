@@ -1,5 +1,6 @@
 "use client"
 
+import api from "@/api"
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
 interface User {
@@ -40,11 +41,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
     try {
       // Simulate API call
+      const { data } = await api.post("http://localhost:8000/auth/login", new URLSearchParams({
+        username: email,
+        password: password,
+      }), {
+        headers: {"Content-Type": "application/x-www-form-urlencoded"}
+      })
+
+      console.log(data)
+
+      localStorage.setItem("access_token", data.access_token)
+      localStorage.setItem("refresh_token", data.refresh_token)
+
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       const mockUser: User = {
         id: "1",
-        name: "John Doe",
+        name: data.username,
         email,
         avatar: "/diverse-user-avatars.png",
         lastLogin: new Date(),
@@ -61,6 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
     try {
       // Simulate API call
+      const { data } = await api.post("http://localhost:8000/auth/register", {
+        "name": name,
+        "email": email,
+        "password": password
+      })
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       const mockUser: User = {
