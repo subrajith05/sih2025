@@ -64,7 +64,7 @@ export default function AuthPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
             <User className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">SkillPath</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">SkillForge</h1>
           <p className="text-muted-foreground">Your journey to career growth starts here</p>
         </div>
 

@@ -8,41 +8,44 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/components/auth-context"
 import { useTheme } from "next-themes"
+import { useRouter } from "next/navigation"
 import {
   Globe,
   Bell,
   Palette,
   Shield,
-  Download,
   Trash2,
   LogOut,
-  Moon,
-  Sun,
-  Monitor,
   Mail,
   MessageSquare,
   Smartphone,
+  Sun,
+  Moon,
+  Laptop,
 } from "lucide-react"
+import { transliterate } from "@/lib/transliterate"
 
 const languages = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "pt", name: "Português", flag: "🇵🇹" },
-  { code: "zh", name: "中文", flag: "🇨🇳" },
+  { code: "en", name: "English", flag: "🇬🇧" },
+  { code: "hi", name: "Hindi (हिंदी)", flag: "🇮🇳" },
+  { code: "ta", name: "Tamil (தமிழ்)", flag: "🇮🇳" },
+  { code: "te", name: "Telugu (తెలుగు)", flag: "🇮🇳" },
+  { code: "kn", name: "Kannada (ಕನ್ನಡ)", flag: "🇮🇳" },
+  { code: "mr", name: "Marathi (मराठी)", flag: "🇮🇳" },
 ]
 
 const themes = [
-  { id: "light", name: "Light", icon: Sun, description: "Clean and bright interface" },
-  { id: "dark", name: "Dark", icon: Moon, description: "Easy on the eyes" },
-  { id: "auto", name: "Auto", icon: Monitor, description: "Follows your device settings" },
+  { id: "auto", name: "System", description: "Match your device setting", icon: Laptop },
+  { id: "light", name: "Light", description: "Bright, high contrast", icon: Sun },
+  { id: "dark", name: "Dark", description: "Dim, low-light", icon: Moon },
 ]
 
 export default function SettingsPage() {
   const { logout } = useAuth()
+  const router = useRouter()
   const { theme: activeTheme, setTheme } = useTheme()
   const [selectedLanguage, setSelectedLanguage] = useState("en")
   const [selectedTheme, setSelectedTheme] = useState("system")
@@ -62,6 +65,9 @@ export default function SettingsPage() {
     allowAnalytics: true,
   })
 
+  const [originalText, setOriginalText] = useState("")
+  const [convertedText, setConvertedText] = useState("")
+
   const handleNotificationChange = (key: string, value: boolean) => {
     setNotifications((prev) => ({ ...prev, [key]: value }))
   }
@@ -70,13 +76,7 @@ export default function SettingsPage() {
     setPrivacy((prev) => ({ ...prev, [key]: value }))
   }
 
-  const handleExportData = () => {
-    // Simulate data export
-    console.log("Exporting user data...")
-  }
-
   const handleDeleteAccount = () => {
-    // Show confirmation dialog
     if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
       console.log("Deleting account...")
     }
@@ -86,6 +86,10 @@ export default function SettingsPage() {
     if (!activeTheme) return
     setSelectedTheme(activeTheme === "system" ? "auto" : activeTheme)
   }, [activeTheme])
+
+  useEffect(() => {
+    setConvertedText(transliterate(originalText, selectedLanguage as any))
+  }, [originalText, selectedLanguage])
 
   return (
     <DashboardLayout>
@@ -106,11 +110,11 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Globe className="w-5 h-5 text-primary" />
-                  <span>Language & Region</span>
+                  <span>Language & Transliteration</span>
                 </CardTitle>
-                <CardDescription>Choose your preferred language and regional settings</CardDescription>
+                <CardDescription>Choose your preferred language and convert any text into it</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {languages.map((language) => (
                     <div
@@ -135,6 +139,25 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="translit-input">Enter text to transliterate</Label>
+                    <Textarea
+                      id="translit-input"
+                      rows={6}
+                      value={originalText}
+                      onChange={(e) => setOriginalText(e.target.value)}
+                      placeholder="Type or paste text in English..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="translit-output">
+                      Converted ({languages.find((l) => l.code === selectedLanguage)?.name})
+                    </Label>
+                    <Textarea id="translit-output" rows={6} value={convertedText} readOnly />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -372,11 +395,6 @@ export default function SettingsPage() {
                 <CardDescription>Manage your account data and settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start bg-transparent" onClick={handleExportData}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Data
-                </Button>
-                <Separator />
                 <Button
                   variant="outline"
                   className="w-full justify-start text-destructive hover:text-destructive bg-transparent"
@@ -448,7 +466,10 @@ export default function SettingsPage() {
                 <Button
                   variant="outline"
                   className="w-full justify-start text-destructive hover:text-destructive bg-transparent"
-                  onClick={logout}
+                  onClick={() => {
+                    logout()
+                    router.push("/")
+                  }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Log Out
